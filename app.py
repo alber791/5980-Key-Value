@@ -95,9 +95,8 @@ async def get(key: str):
 async def put(key: str, payload: ValuePayload):
     #Use lock to ensure thread safety
     async with store_lock:
-        old_value = store.get(key)
         store[key] = payload.value
-        logger.info(f"PUT {key} = {payload.value!r}" + (f" (was {old_value!r})" if old_value is not None else ""))
+        logger.info(f"PUT {key} = {payload.value!r}")
 
     save_to_disk()  # Synchronous save for durability
     return {"status": "ok"}
