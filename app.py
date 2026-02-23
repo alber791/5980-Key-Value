@@ -59,6 +59,11 @@ def save_to_disk() -> None:
 load_from_disk()
 
 # Models for put request (request bodies need to follow this structure)
+"""
+{
+		"value": "some_value"
+}
+"""
 class ValuePayload(BaseModel):
     value: Any
 
@@ -76,6 +81,7 @@ async def log_requests(request: Request, call_next):
 # ------------ API Endpoints ------------
 @app.get("/{key}", response_model=Dict[str, Any])
 async def get(key: str):
+    #Use lock to ensure thread safety
     async with store_lock:
         if key in store:
             logger.info(f"GET {key} -> OK")
@@ -83,9 +89,11 @@ async def get(key: str):
         logger.info(f"GET {key} -> NOT FOUND")
         raise HTTPException(status_code=404, detail="Key not found")
 
+#put or post to create/update key
 @app.put("/{key}", status_code=status.HTTP_200_OK)
 @app.post("/{key}", status_code=status.HTTP_200_OK)
 async def put(key: str, payload: ValuePayload):
+    #Use lock to ensure thread safety
     async with store_lock:
         old_value = store.get(key)
         store[key] = payload.value
@@ -96,6 +104,7 @@ async def put(key: str, payload: ValuePayload):
 
 @app.delete("/{key}", status_code=status.HTTP_200_OK)
 async def delete(key: str):
+    #Use lock to ensure thread safety
     async with store_lock:
         if key in store:
             del store[key]
@@ -106,7 +115,7 @@ async def delete(key: str):
         raise HTTPException(status_code=404, detail="Key not found")
 
 
-# ── Startup event (optional: could add periodic save here if desired) ─────
+#startup and shutdown events
 @app.on_event("startup")
 async def startup_event():
     logger.info("KV Store server started")
@@ -116,6 +125,6 @@ async def shutdown_event():
     save_to_disk()  # Final save on shutdown
     logger.info("KV Store server shutting down")
 
-
+#Run app if executed directly
 if __name__ == "__main__":   
     uvicorn.run("app:app", host="127.0.0.1", port=8080, reload=True)
