@@ -3,6 +3,7 @@
 ## Prerequisites
 
 - Python 3.13
+- Docker Desktop on Windows, or Docker Engine on Linux
 - Pipenv (recommended)
 
 
@@ -13,13 +14,27 @@ git clone https://github.com/alber791/5980-Key-Value.git
 cd 5980-Key-Value
 ```
 
+## Build and Run Container
+
+Build the container
+
+```
+docker build -t kv-store .
+```
+
+Run the container
+
+```
+docker run -p 8080:8080 kv-store
+```
+
+## Start the Server Locally (Without container)
+
 Install dependencies and create the virtual environment:
 
 ```powershell
 pipenv install
 ```
-
-## Start the Server
 
 Run the API with Uvicorn:
 
@@ -42,6 +57,8 @@ Server URL:
 - Data is persisted to `kv_store.json`
 - Logs are written to `kv_operations.log`
 
-## Demo
+## Demo with container
+
+## Demo without container
 https://github.com/user-attachments/assets/2c8134db-b4bf-4ee0-afd9-4156cc61e78a
 
