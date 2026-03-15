@@ -1,18 +1,29 @@
 # Pulled from docker.com, generic dockerfile for python applications. See https://docs.docker.com/language/python/build-images/ for more details.
+FROM python:3.13-slim
 
-FROM python:3.13
-WORKDIR /usr/local/app
+WORKDIR /app
 
-# Install the application dependencies
+# Prevent Python from writing .pyc files and force stdout/stderr flushing
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install Python dependencies
+# requirements.txt should include at least:
+# fastapi
+# uvicorn[standard]
+
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-# Copy in the source code
-COPY src ./src
+# Copy application code
+COPY app.py ./
+
+# Create a non-root user and ensure the app directory is writable
+RUN useradd --create-home appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
 EXPOSE 8080
 
-# Setup an app user so the container doesn't run as the root user
-RUN useradd app
-USER app
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
