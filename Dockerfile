@@ -1,3 +1,4 @@
+# NOTE: Due to how app writes kv_store.json and kv_operations.log we do NOT have persistence.
 # Pulled from docker.com, generic dockerfile for python applications. See https://docs.docker.com/language/python/build-images/ for more details.
 FROM python:3.13-slim
 
