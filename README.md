@@ -1,12 +1,5 @@
 # 5980 Key-Value Store
 
-## Quick Start
-
-```powershell
-docker-compose up --build
-python benchmark.py
-```
-
 ## Architecture
 
 ```
@@ -26,17 +19,12 @@ KV Store 3 (8083)
 - `GET /health` — Health check
 - `POST /admin/stores` — Update active backends (optional `rebalance: true`)
 
-Example:
-```bash
-curl -X PUT http://localhost:8080/mykey \
-  -H "Content-Type: application/json" \
-  -d '{"value": "myvalue"}'
-```
-
 ## Running with Docker Compose
 
 ### Prerequisites
-- Docker Desktop or Docker Engine
+- Docker Desktop or Docker Engine running
+- Python 3.13
+- Pipenv
 
 ### Start services
 
