@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
@@ -13,8 +14,10 @@ from pydantic import BaseModel
 app = FastAPI()
 
 # path for data file and log file
-DATA_FILE = Path("kv_store.json")
-LOG_FILE = "kv_operations.log"
+DATA_FILE = Path(os.getenv("KV_DATA_FILE", "/app/data/kv_store.json"))
+LOG_FILE = os.getenv("KV_LOG_FILE", "/app/data/kv_operations.log")
+
+DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 # Logging setup, logs to both console and file
 logging.basicConfig(
@@ -28,7 +31,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("KVStore")
 
-# Thread-safe (async-safe) storage
+# Thread-safe storage
 store: Dict[str, Any] = {}
 store_lock = asyncio.Lock()  # lock for async safety
 
@@ -58,7 +61,7 @@ def save_to_disk() -> None:
 # Load at startup
 load_from_disk()
 
-# Models for put request (request bodies need to follow this structure)
+# Models for put request
 """
 {
 		"value": "some_value"
@@ -112,6 +115,22 @@ async def delete(key: str):
             return {"status": "deleted"}
         logger.info(f"DEL {key} -> NOT FOUND")
         raise HTTPException(status_code=404, detail="Key not found")
+
+
+@app.get("/admin/dump", response_model=Dict[str, Any])
+async def admin_dump():
+    async with store_lock:
+        return dict(store)
+
+
+@app.post("/admin/load", status_code=status.HTTP_200_OK)
+async def admin_load(payload: Dict[str, Any]):
+    async with store_lock:
+        store.update(payload)
+        logger.info(f"ADMIN LOAD -> merged {len(payload)} keys")
+
+    save_to_disk()
+    return {"status": "ok", "loaded": len(payload)}
 
 
 #startup and shutdown events

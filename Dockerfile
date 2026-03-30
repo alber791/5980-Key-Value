@@ -1,4 +1,4 @@
-# NOTE: Due to how app writes kv_store.json and kv_operations.log we do NOT have persistence.
+# NOTE: Data is persisted to /app/data via docker-compose volume mounts.
 # Pulled from docker.com, generic dockerfile for python applications. See https://docs.docker.com/language/python/build-images/ for more details.
 FROM python:3.13-slim
 

@@ -1,62 +1,94 @@
 # 5980 Key-Value Store
 
-## Prerequisites
-
-- Python 3.13
-- Docker Desktop on Windows, or Docker Engine on Linux
-- Pipenv (recommended)
-
-
-## Setup From Git Clone
+## Quick Start
 
 ```powershell
-git clone https://github.com/alber791/5980-Key-Value.git
-cd 5980-Key-Value
+docker-compose up --build
+python benchmark.py
 ```
 
-## Build and Run Container
-
-Build the container
+## Architecture
 
 ```
-docker build -t kv-store .
+Client (localhost:8080) 
+Router (8080)   
+KV Store 1 (8081)
+KV Store 2 (8082)
+KV Store 3 (8083)
 ```
-
-Run the container
-
-```
-docker run -p 8080:8080 kv-store
-```
-
-## Start the Server Locally (Without container)
-
-Install dependencies and create the virtual environment:
-
-```powershell
-pipenv install
-```
-
-Run the API with Uvicorn:
-
-```powershell
-pipenv run uvicorn app:app --host 127.0.0.1 --port 8080 --reload
-```
-
-Server URL:
-
-- API base: `http://127.0.0.1:8080`
 
 ## API Endpoints
 
-- `GET /{key}`
-- `PUT /{key}` with JSON body: `{ "value": <any JSON value> }`
-- `DELETE /{key}`
+- `GET /{key}` — Get value
+- `PUT /{key}` — Set value
+- `POST /{key}` — Set value
+- `DELETE /{key}` — Delete key
+- `GET /health` — Health check
+- `POST /admin/stores` — Update active backends (optional `rebalance: true`)
 
-## Data and Logs
+Example:
+```bash
+curl -X PUT http://localhost:8080/mykey \
+  -H "Content-Type: application/json" \
+  -d '{"value": "myvalue"}'
+```
 
-- Data is persisted to `kv_store.json`
-- Logs are written to `kv_operations.log`
+## Running with Docker Compose
 
-## Demo with container
-https://github.com/user-attachments/assets/5015d830-f205-48d5-b9a9-f822b4e58fd5
+### Prerequisites
+- Docker Desktop or Docker Engine
 
+### Start services
+
+```powershell
+docker-compose up --build
+```
+
+Services:
+- Router: `http://localhost:8080`
+- Store 1: `http://localhost:8081`
+- Store 2: `http://localhost:8082`
+- Store 3: `http://localhost:8083`
+
+### Run benchmarks
+
+In a seperate terminal, after starting docker, run benchmark.py
+
+```powershell
+python benchmark.py
+```
+
+Generates:
+- `benchmark_results.json` - detailed metrics
+- `performance_comparison.png` - throughput/latency graphs
+
+## Hashing and Rebalance
+
+Traditional hashing `(key % num_stores)` requires moving all keys when stores change. Consistent hashing uses a virtual ring where:
+
+- Keys hash to positions on a circle
+- Each store owns a segment of the ring
+- Adding a store only moves ~1/n keys
+- Removing a store reassigns that segment's keys
+
+When `/admin/stores` is called, the router can rebalance by:
+
+- Reading each old store's key dump
+- Recomputing ownership using the updated ring
+- Moving keys to the new owner store
+
+This preserves key reachability across scale up/down events.
+
+## File Overview
+
+- `app.py` - Single KV store service (FastAPI)
+- `router.py` - Consistent hashing proxy (routes to backends)
+- `Dockerfile` - Image for KV store instances
+- `Dockerfile.router` - Image for router service
+- `docker-compose.yml` - Orchestrates all services
+- `benchmark.py` - Performance test
+- `requirements.txt` - Dependencies
+
+## Demo Videos
+
+- **With Container**: [ContainerDemo.mp4](ContainerDemo.mp4)

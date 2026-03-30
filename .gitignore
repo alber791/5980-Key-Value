@@ -1,2 +1,7 @@
 kv_operations.log
 kv_store.json
+benchmark_results.json
+performance_comparison.png
+data_store_1/
+data_store_2/
+data_store_3/
