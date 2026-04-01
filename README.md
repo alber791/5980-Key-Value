@@ -50,6 +50,12 @@ Generates:
 - `benchmark_results.json` - detailed metrics
 - `performance_comparison.png` - throughput/latency graphs
 
+### Benchmark Image Example
+
+<img width="4164" height="1470" alt="performance_comparison" src="https://github.com/user-attachments/assets/26e668c9-d56f-41a2-9acd-19348de1f6e9" />
+
+From this example, we can see that adding KV stores saw an increase in throughput and lower latency
+
 ## Hashing and Rebalance
 
 Traditional hashing `(key % num_stores)` requires moving all keys when stores change. Consistent hashing uses a virtual ring where:
