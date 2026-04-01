@@ -42,6 +42,8 @@ Services:
 
 In a seperate terminal, after starting docker, run benchmark.py
 
+This will run testing on 1, 2, and 3 KV stores and compile and compare the results
+
 ```powershell
 python benchmark.py
 ```
