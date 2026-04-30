@@ -1,12 +1,5 @@
 # 5980 Key-Value Store
 
-## Quick Start
-
-```powershell
-docker-compose up --build
-python benchmark.py
-```
-
 ## Architecture
 
 ```
@@ -22,13 +15,12 @@ KV Store 3 (8083)
 - `PUT /{key}` — Set value
 - `POST /{key}` — Set value
 - `DELETE /{key}` — Delete key
-- `GET /admin/dump` — Dump all keys for diagnostics
-- `POST /admin/load` — Bulk load keys
-- `POST /admin/reset` — Clear a store for benchmark setup
+- `GET /health` — Health check
+- `POST /admin/stores` — Update active backends (optional `rebalance: true`)
 
 Example:
 ```bash
-curl -X PUT http://localhost:8081/mykey \
+curl -X PUT http://localhost:8080/mykey \
   -H "Content-Type: application/json" \
   -d '{"value": "myvalue"}'
 ```
@@ -36,7 +28,9 @@ curl -X PUT http://localhost:8081/mykey \
 ## Running with Docker Compose
 
 ### Prerequisites
-- Docker Desktop or Docker Engine
+- Docker Desktop or Docker Engine running
+- Python 3.13
+- Pipenv
 
 ### Start services
 
@@ -67,13 +61,15 @@ Useful environment variables:
 
 In a seperate terminal, after starting docker, run benchmark.py
 
+This will run testing on 1, 2, and 3 KV stores and compile and compare the results
+
 ```powershell
 python benchmark.py
 ```
 
 Generates:
 - `benchmark_results.json` - detailed metrics
-- `performance_comparison.png` - throughput/latency/error rate graphs
+- `performance_comparison.png` - throughput/latency graphs
 
 ## Hashing and Benchmarking
 
@@ -101,6 +97,8 @@ The benchmark now measures:
 - `benchmark.py` - Performance test
 - `requirements.txt` - Dependencies
 
-## Demo Videos
+## Demo
 
-- **With Container**: [ContainerDemo.mp4](ContainerDemo.mp4)
+https://github.com/user-attachments/assets/ee7c3948-dea9-4089-b121-496fbc955571
+
+
