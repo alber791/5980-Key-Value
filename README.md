@@ -43,20 +43,6 @@ Services:
 - Store 2: `http://localhost:8082`
 - Store 3: `http://localhost:8083`
 
-### Benchmark-focused defaults
-
-The current configuration is tuned for leaderboard performance:
-
-- Store writes are buffered in memory and flushed periodically instead of on every request.
-- Request-by-request logging is disabled by default.
-- The benchmark hashes keys directly to the stores instead of adding a router hop.
-
-Useful environment variables:
-
-- `KV_SYNC_WRITES=true` — force immediate durability on every mutation.
-- `KV_SAVE_INTERVAL_SECONDS=1.0` — control the periodic flush interval.
-- `KV_ENABLE_REQUEST_LOGS=true` — enable per-request logs on the KV stores.
-
 ### Run benchmarks
 
 In a seperate terminal, after starting docker, run benchmark.py
@@ -88,14 +74,6 @@ The benchmark now measures:
 - throughput
 - average latency
 - error rate
-
-## File Overview
-
-- `app.py` - Single KV store service (FastAPI)
-- `Dockerfile` - Image for KV store instances
-- `docker-compose.yml` - Orchestrates all services
-- `benchmark.py` - Performance test
-- `requirements.txt` - Dependencies
 
 ## Demo
 
