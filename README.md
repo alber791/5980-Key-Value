@@ -10,8 +10,7 @@ python benchmark.py
 ## Architecture
 
 ```
-Client (localhost:8080) 
-Router (8080)   
+Benchmark Client (client-side consistent hashing)
 KV Store 1 (8081)
 KV Store 2 (8082)
 KV Store 3 (8083)
@@ -23,12 +22,13 @@ KV Store 3 (8083)
 - `PUT /{key}` — Set value
 - `POST /{key}` — Set value
 - `DELETE /{key}` — Delete key
-- `GET /health` — Health check
-- `POST /admin/stores` — Update active backends (optional `rebalance: true`)
+- `GET /admin/dump` — Dump all keys for diagnostics
+- `POST /admin/load` — Bulk load keys
+- `POST /admin/reset` — Clear a store for benchmark setup
 
 Example:
 ```bash
-curl -X PUT http://localhost:8080/mykey \
+curl -X PUT http://localhost:8081/mykey \
   -H "Content-Type: application/json" \
   -d '{"value": "myvalue"}'
 ```
@@ -45,10 +45,23 @@ docker-compose up --build
 ```
 
 Services:
-- Router: `http://localhost:8080`
 - Store 1: `http://localhost:8081`
 - Store 2: `http://localhost:8082`
 - Store 3: `http://localhost:8083`
+
+### Benchmark-focused defaults
+
+The current configuration is tuned for leaderboard performance:
+
+- Store writes are buffered in memory and flushed periodically instead of on every request.
+- Request-by-request logging is disabled by default.
+- The benchmark hashes keys directly to the stores instead of adding a router hop.
+
+Useful environment variables:
+
+- `KV_SYNC_WRITES=true` — force immediate durability on every mutation.
+- `KV_SAVE_INTERVAL_SECONDS=1.0` — control the periodic flush interval.
+- `KV_ENABLE_REQUEST_LOGS=true` — enable per-request logs on the KV stores.
 
 ### Run benchmarks
 
@@ -60,9 +73,9 @@ python benchmark.py
 
 Generates:
 - `benchmark_results.json` - detailed metrics
-- `performance_comparison.png` - throughput/latency graphs
+- `performance_comparison.png` - throughput/latency/error rate graphs
 
-## Hashing and Rebalance
+## Hashing and Benchmarking
 
 Traditional hashing `(key % num_stores)` requires moving all keys when stores change. Consistent hashing uses a virtual ring where:
 
@@ -71,20 +84,19 @@ Traditional hashing `(key % num_stores)` requires moving all keys when stores ch
 - Adding a store only moves ~1/n keys
 - Removing a store reassigns that segment's keys
 
-When `/admin/stores` is called, the router can rebalance by:
+This repo now applies that hashing in the benchmark client, which sends each request directly to the selected store.
 
-- Reading each old store's key dump
-- Recomputing ownership using the updated ring
-- Moving keys to the new owner store
+The benchmark now measures:
 
-This preserves key reachability across scale up/down events.
+- `set`, `get`, and `delete` operations
+- throughput
+- average latency
+- error rate
 
 ## File Overview
 
 - `app.py` - Single KV store service (FastAPI)
-- `router.py` - Consistent hashing proxy (routes to backends)
 - `Dockerfile` - Image for KV store instances
-- `Dockerfile.router` - Image for router service
 - `docker-compose.yml` - Orchestrates all services
 - `benchmark.py` - Performance test
 - `requirements.txt` - Dependencies

@@ -35,22 +35,6 @@ services:
     volumes:
       - ./data_store_3:/app/data
 
-  router:
-    build:
-      context: .
-      dockerfile: Dockerfile.router
-    container_name: kv_router
-    ports:
-      - "8080:8080"
-    depends_on:
-      - kv_store_1
-      - kv_store_2
-      - kv_store_3
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - kv_network
-
 networks:
   kv_network:
     driver: bridge

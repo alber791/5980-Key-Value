@@ -1,6 +1,5 @@
 fastapi
 uvicorn[standard]
-httpx
-uhashring
 matplotlib
 requests
+httpx
