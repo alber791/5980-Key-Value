@@ -9,22 +9,6 @@ KV Store 2 (8082)
 KV Store 3 (8083)
 ```
 
-## API Endpoints
-
-- `GET /{key}` — Get value
-- `PUT /{key}` — Set value
-- `POST /{key}` — Set value
-- `DELETE /{key}` — Delete key
-- `GET /health` — Health check
-- `POST /admin/stores` — Update active backends (optional `rebalance: true`)
-
-Example:
-```bash
-curl -X PUT http://localhost:8080/mykey \
-  -H "Content-Type: application/json" \
-  -d '{"value": "myvalue"}'
-```
-
 ## Running with Docker Compose
 
 ### Prerequisites
@@ -37,11 +21,6 @@ curl -X PUT http://localhost:8080/mykey \
 ```powershell
 docker-compose up --build
 ```
-
-Services:
-- Store 1: `http://localhost:8081`
-- Store 2: `http://localhost:8082`
-- Store 3: `http://localhost:8083`
 
 ### Run benchmarks
 
